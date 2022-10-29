@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+
 from setuptools import find_packages, setup
 
 setup(
@@ -20,7 +22,45 @@ setup(
     author="Miloslav Pojman",
     author_email="mpojman@akamai.com",
     description="Hackable HTTP/{1,2,3} {client,server,proxy}",
+    long_description=Path(__file__).parent.joinpath("README.rst").read_text("utf-8"),
+    long_description_content_type="text/x-rst",
+    keywords=[
+        "HTTP",
+        "HTTP/2",
+        "HTTP/3",
+        "server",
+        "client",
+        "proxy",
+        "AnyIO",
+        "asyncio",
+        "Trio",
+    ],
     license="Apache License 2.0",
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Environment :: Console",
+        "Environment :: Web Environment",
+        "Framework :: AnyIO",
+        "Framework :: AsyncIO",
+        "Framework :: Trio",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Topic :: Internet",
+        "Topic :: Internet :: WWW/HTTP",
+        "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+        "Topic :: Software Development :: Libraries",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Topic :: System :: Networking",
+        "Typing :: Typed",
+    ],
     package_dir={"": "src"},
     packages=find_packages("src"),
     python_requires=">=3.7",

@@ -1,0 +1,6 @@
+__pycache__
+# Packaging
+*.egg-info
+.eggs
+build/
+dist/

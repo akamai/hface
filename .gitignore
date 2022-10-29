@@ -1,4 +1,6 @@
 __pycache__
+# Testing
+.tox
 # Packaging
 *.egg-info
 .eggs

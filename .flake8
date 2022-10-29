@@ -1,0 +1,8 @@
+[flake8]
+# https://black.readthedocs.io/en/stable/compatible_configs.html#flake8
+max-line-length = 88
+extend-ignore = E203, W503
+
+per-file-ignores =
+    # imported but unused
+    __init__.py: F401

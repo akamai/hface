@@ -1,0 +1,168 @@
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+
+from hface import HeadersType
+
+
+class Event:
+    """
+    Base class for HTTP events.
+
+    This is an abstract base class that should not be initialized.
+    """
+
+
+#
+# Connection events
+#
+
+
+@dataclass
+class ConnectionTerminated(Event):
+    """
+    Connection was terminated.
+
+    Extends :class:`.Event`.
+    """
+
+    #: Reason for closing the connection.
+    error_code: int = 0
+
+    #: Optional message with more information
+    message: str | None = field(default=None, compare=False)
+
+    def __repr__(self) -> str:
+        cls = type(self).__name__
+        return f"{cls}(error_code={self.error_code!r}, message={self.message!r})"
+
+
+@dataclass
+class GoawayReceived(Event):
+    """
+    GOAWAY frame was received
+
+    Extends :class:`.Event`.
+    """
+
+    #: Highest stream ID that could be processed.
+    last_stream_id: int
+
+    #: Reason for closing the connection.
+    error_code: int = 0
+
+    def __repr__(self) -> str:
+        cls = type(self).__name__
+        return (
+            f"{cls}(last_stream_id={self.last_stream_id!r}, "
+            f"error_code={self.error_code!r})"
+        )
+
+
+#
+# Stream events
+#
+
+
+@dataclass
+class StreamEvent(Event):
+    """
+    Event on one HTTP stream.
+
+    This is an abstract base class that should not be used directly.
+
+    Extends :class:`.Event`.
+    """
+
+    #: Stream ID
+    stream_id: int
+
+
+@dataclass
+class StreamReset(StreamEvent):
+    """
+    One stream of an HTTP connection was reset.
+
+    When a stream is reset, it must no longer be used, but the parent
+    connection and other streams are unaffected.
+
+    This is an abstract base class that should not be used directly.
+    More specific subclasses (StreamResetSent or StreamResetReceived)
+    should be emitted.
+
+    Extends :class:`.StreamEvent`.
+    """
+
+    #: Reason for closing the stream.
+    error_code: int = 0
+
+    def __repr__(self) -> str:
+        cls = type(self).__name__
+        return f"{cls}(stream_id={self.stream_id!r}, error_code={self.error_code!r})"
+
+
+@dataclass
+class StreamResetReceived(StreamReset):
+    """
+    One stream of an HTTP connection was reset by the peer.
+
+    This probably means that we did something that the peer does not like.
+
+    Extends :class:`.StreamReset`.
+    """
+
+
+@dataclass
+class StreamResetSent(StreamReset):
+    """
+    One stream of an HTTP connection was reset by us.
+
+    This can be explicitly requested by a user, or a protocol
+    implementation can send the reset when a peer misbehaves.
+
+    Extends :class:`.StreamReset`.
+    """
+
+
+@dataclass
+class HeadersReceived(StreamEvent):
+    """
+    A frame with HTTP headers was received.
+
+    Extends :class:`.StreamEvent`.
+    """
+
+    #: The received HTTP headers
+    headers: HeadersType
+
+    #: Signals that data will not be sent by the peer over the stream.
+    end_stream: bool = False
+
+    def __repr__(self) -> str:
+        cls = type(self).__name__
+        return (
+            f"{cls}(stream_id={self.stream_id!r}, "
+            f"len(headers)={len(self.headers)}, end_stream={self.end_stream!r})"
+        )
+
+
+@dataclass
+class DataReceived(StreamEvent):
+    """
+    A frame with HTTP data was received.
+
+    Extends :class:`.StreamEvent`.
+    """
+
+    #: The received data.
+    data: bytes
+
+    #: Signals that no more data will be sent by the peer over the stream.
+    end_stream: bool = False
+
+    def __repr__(self) -> str:
+        cls = type(self).__name__
+        return (
+            f"{cls}(stream_id={self.stream_id!r}, "
+            f"len(data)={len(self.data)}, end_stream={self.end_stream!r})"
+        )

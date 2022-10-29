@@ -19,6 +19,7 @@ About hface
     :maxdepth: 2
 
     intro
+    license
 
 
 Reference

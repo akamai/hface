@@ -1,5 +1,6 @@
 include .flake8
 include .isort.cfg
+include LICENSE
 include Makefile
 include mypy.ini
 include tox.ini

@@ -22,8 +22,14 @@ setup(
     author="Miloslav Pojman",
     author_email="mpojman@akamai.com",
     description="Hackable HTTP/{1,2,3} {client,server,proxy}",
+    url="https://github.com/akamai/hface",
+    project_urls={
+        "Documentation": "https://hface.readthedocs.io/",
+        "Source Code": "https://github.com/akamai/hface",
+    },
     long_description=Path(__file__).parent.joinpath("README.rst").read_text("utf-8"),
     long_description_content_type="text/x-rst",
+    license="Apache License 2.0",
     keywords=[
         "HTTP",
         "HTTP/2",
@@ -35,7 +41,6 @@ setup(
         "asyncio",
         "Trio",
     ],
-    license="Apache License 2.0",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Console",

@@ -11,6 +11,14 @@ hface
 * asyncio_ or Trio_ support thanks to AnyIO_
 * Layered design with well-defined APIs
 
+hface is hosted at GitHub_ and it can be installed from PyPI_.
+
+This documentation is available online at `Read the Docs`_.
+
+.. _GitHub: https://github.com/akamai/hface
+.. _PyPI: https://pypi.org/project/hface/
+.. _Read the Docs: https://hface.readthedocs.io/
+
 
 About hface
 -----------

@@ -3,6 +3,7 @@
 hface - Hackable HTTP/{1,2,3} {client,server,proxy}
 ===================================================
 
+Documentation_ | GitHub_ | PyPI_
 
 * HTTP client and server written in Python
 * HTTP/1.1, HTTP/2, and HTTP/3 support
@@ -10,6 +11,12 @@ hface - Hackable HTTP/{1,2,3} {client,server,proxy}
 * asyncio_ or Trio_ support thanks to AnyIO_
 * Layered design with well-defined APIs
 
+See online documentation_ for more info.
+
+
+.. _Documentation: https://hface.readthedocs.io/
+.. _GitHub: https://github.com/akamai/hface
+.. _PyPI: https://pypi.org/project/hface/
 
 .. _Sans-IO: https://sans-io.readthedocs.io/
 .. _AnyIO: https://anyio.readthedocs.io/

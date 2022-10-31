@@ -43,7 +43,7 @@ html_theme_options = {
     "show_related": True,
     "show_relbar_bottom": True,
     "extra_nav_links": {
-        # 'GitHub': '',
-        # 'PyPI': '',
+        "GitHub": "https://github.com/akamai/hface",
+        "PyPI": "https://pypi.org/project/hface/",
     },
 }

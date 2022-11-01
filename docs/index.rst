@@ -27,6 +27,7 @@ About hface
     :maxdepth: 2
 
     intro
+    changelog
     license
 
 

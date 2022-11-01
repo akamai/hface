@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 from typing import Type
 
+from .. import __version__ as version
 from ._commands.base import Command
 from ._commands.client import ClientCommand
 from ._commands.proxy import ProxyCommand
@@ -40,6 +41,7 @@ def run(*, prog: str | None = None) -> None:
         description="HTTP/{1,2,3} {client,server,proxy}.",
         allow_abbrev=False,
     )
+    parser.add_argument("--version", action="version", version=f"hface {version}")
 
     def default_command(args: argparse.Namespace) -> None:
         parser.print_usage()

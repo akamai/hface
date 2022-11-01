@@ -18,7 +18,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="hface",
-    version="0.0",
+    version="0.1.dev",
     author="Miloslav Pojman",
     author_email="mpojman@akamai.com",
     description="Hackable HTTP/{1,2,3} {client,server,proxy}",

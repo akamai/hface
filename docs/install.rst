@@ -24,7 +24,7 @@ TLS certificates
 
 To run a server, you will need a TLS certificate.
 You can use mkcert_ to generate a certificate that will be trusted by your operating system and your browsers.
-Python programs (including hface) not trust to system certificates, but you can export ``SSL_CERT_DIR`` to fix that.
+Python programs (including hface) do not trust to system certificates, but you can export ``SSL_CERT_DIR`` to fix that.
 
 .. code-block:: shell
 

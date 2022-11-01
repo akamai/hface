@@ -15,7 +15,7 @@ Sans-IO example
 ---------------
 
 The following example shows how a protocol class
-builds an HTTP requests and parses an HTTP response:
+builds an HTTP request and parses an HTTP response:
 
 .. literalinclude:: ../examples/protocol.py
 
@@ -25,8 +25,8 @@ The protocol class translates the headers internally.
 This is how hface can offer one interface for all HTTP versions.
 
 
-How it works?
--------------
+How does it work?
+-----------------
 
 The central point of the sans-IO layers is the :class:`.HTTPProtocol` interface.
 Instances of this interface represent an HTTP connection.
@@ -35,9 +35,9 @@ Implementations have to translate HTTP events to network traffic and vice versa.
 .. note::
 
     The protocol interface is heavily inspired by the existing sans-IO libraries:
-    h11_, h2_, and aioquic_. At he same time, these libraries are used internally by hface.
+    h11_, h2_, and aioquic_. At the same time, these libraries are used internally by hface.
 
-    The lowest level of hface can be seens as an unifying interface
+    The lowest level of hface can be seen as a unifying interface
     on top of the existing HTTP implementations.
 
 

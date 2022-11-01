@@ -67,7 +67,7 @@ A command-line HTTP client is included too:
     make sure that you did NOT export ``SSL_CERT_FILE``.
 
 
-By default, the client open a TPC connection and chooses between HTTP/1 or HTTP/2
+By default, the client opens a TPC connection and chooses between HTTP/1 or HTTP/2
 based on ALPN in a TLS handshake. The client does not process the Alt-Svc header.
 Use the ``--http3`` option to open a QUIC (HTTP/3) connection.
 

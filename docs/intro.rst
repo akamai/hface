@@ -74,7 +74,7 @@ Low-level only
 
 hface is not a replacement for Requests_, httpx_, or urllib3_.
 These libraries offer a nice interface for day-to-day use,
-with many high-level functionality that if out of scope of hface.
+with many high-level functionalities that are out of scope of hface.
 
 If hface becomes stable enough, it should be possible to build
 something like the mentioned libraries on top of hface.

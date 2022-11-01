@@ -18,6 +18,8 @@ ASGI server example
 
 .. literalinclude:: ../examples/server.py
 
+(The example should run as it is. It is available in `examples/server.py <https://github.com/akamai/hface/blob/main/examples/server.py>`_)
+
 
 Proxy server example
 --------------------
@@ -26,6 +28,8 @@ Proxy server example
 
 .. literalinclude:: ../examples/proxy_server.py
 
+(The example should run as it is. It is available in `examples/proxy_server.py <https://github.com/akamai/hface/blob/main/examples/proxy_server.py>`_)
+
 
 HTTP client example
 -------------------
@@ -33,6 +37,8 @@ HTTP client example
 The :class:`hface.client.Client` can be used to issue an HTTP request:
 
 .. literalinclude:: ../examples/client.py
+
+(The example should run as it is. It is available in `examples/client.py <https://github.com/akamai/hface/blob/main/examples/client.py>`_)
 
 Async context manager :meth:`.Client.session` must be entered to get :class:`.ClientSession`.
 The :meth:`.ClientSession.dispatch` makes HTTP requests.
@@ -50,6 +56,8 @@ It may be desired to tunnel non-HTTP traffic through an HTTP proxy.
 In such cases, it is possible to use directly :class:`hface.client.ProxyClient`:
 
 .. literalinclude:: ../examples/proxy_client.py
+
+(The example should run as it is. It is available in `examples/proxy_client.py <https://github.com/akamai/hface/blob/main/examples/proxy_client.py>`_)
 
 Async context manager :meth:`.ProxyClient.session` must be used to get :class:`.ProxyClientSession`.
 This class implements :class:`.ClientNetworking`, so it can be used to open network connections.
@@ -160,6 +168,7 @@ Client models
 
 .. autoclass:: Origin
     :members:
+
 
 .. _asyncio: https://docs.python.org/3/library/asyncio.html
 .. _AnyIO: https://anyio.readthedocs.io/

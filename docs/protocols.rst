@@ -19,6 +19,8 @@ builds an HTTP request and parses an HTTP response:
 
 .. literalinclude:: ../examples/protocol.py
 
+(The example should run as it is. It is available in `examples/protocol.py <https://github.com/akamai/hface/blob/main/examples/protocol.py>`_)
+
 Notice that the example uses an HTTP/1 protocol,
 but the class takes HTTP/2-like headers.
 The protocol class translates the headers internally.

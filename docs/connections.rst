@@ -18,6 +18,8 @@ The following example shows a minimal HTTP server:
 
 .. literalinclude:: ../examples/custom_server.py
 
+(The example should run as it is. It is available in `examples/custom_server.py <https://github.com/akamai/hface/blob/main/examples/custom_server.py>`_)
+
 HTTP connections are handled in the ``handler()`` function.
 The example function consumes HTTP events: when it receives request headers,
 it sends an HTTP response (ignoring any request body).
@@ -43,6 +45,8 @@ Custom client example
 The next example is a simple HTTP client:
 
 .. literalinclude:: ../examples/custom_client.py
+
+(The example should run as it is. It is available in `examples/custom_client.py <https://github.com/akamai/hface/blob/main/examples/custom_client.py>`_)
 
 The ``make_request()`` function send an HTTP request
 and waits for HTTP events with response headers and response data.

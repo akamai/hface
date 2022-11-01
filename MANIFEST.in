@@ -1,5 +1,7 @@
 include .flake8
 include .isort.cfg
+include .readthedocs.yaml
+include CHANGELOG.rst
 include LICENSE
 include Makefile
 include mypy.ini
@@ -8,6 +10,7 @@ recursive-include docs *.css
 recursive-include docs *.png
 recursive-include docs *.py
 recursive-include docs *.rst
+recursive-include docs *.txt
 recursive-include examples *.py
 recursive-include src *.typed
 recursive-include tests *.py

@@ -10,7 +10,7 @@ hface requires Python 3.7 or better. It can be installed using pip:
 
 .. code-block:: shell
 
-    pip install .[all]
+    python3 -m pip install hface[all]
 
 When the ``[all]`` extra is selected, all optional dependencies are installed:
 
@@ -28,6 +28,7 @@ Python programs (including hface) do not trust to system certificates, but you c
 
 .. code-block:: shell
 
+    mkdir -p certs/
     mkcert -cert-file certs/cert.pem -key-file certs/key.pem localhost localhost 127.0.0.1 ::1
     export SSL_CERT_FILE="$(mkcert -CAROOT)/rootCA.pem"
 

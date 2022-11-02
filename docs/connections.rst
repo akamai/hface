@@ -64,8 +64,8 @@ Servers advertise HTTP/3 support using an Alt-Svc header, which is not processed
 Selection between TCP and QUIC connections has to be implemented in a higher layer.
 
 
-How it works?
--------------
+How does it work?
+-----------------
 
 The :class:`.HTTPConnection` class provides an unified interface to HTTP connections,
 independently on their version.

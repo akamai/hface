@@ -137,11 +137,11 @@ class HTTPOverQUICOpener(HTTPOpener):
         http_factory: HTTPOverQUICClientFactory,
         networking: UDPClientNetworking | None = None,
         *,
-        tls_config: ClientTLSConfig,
+        tls_config: ClientTLSConfig | None = None,
     ) -> None:
         self._http_factory = http_factory
         self._networking = networking or SystemNetworking()
-        self._tls_config = tls_config
+        self._tls_config = tls_config or ClientTLSConfig()
 
     async def __call__(
         self,

@@ -1,5 +1,6 @@
 import asyncio
 
+from hface import ClientTLSConfig
 from hface.connections import HTTPConnection, HTTPOverTCPOpener
 from hface.events import ConnectionTerminated, DataReceived, HeadersReceived
 from hface.protocols.http1 import HTTP1ClientFactory
@@ -29,7 +30,13 @@ async def make_request(connection: HTTPConnection):
 
 
 async def main():
-    open_connection = HTTPOverTCPOpener(HTTP1ClientFactory())
+    tls_config = ClientTLSConfig(
+        cafile="certs/cacert.pem",
+    )
+    open_connection = HTTPOverTCPOpener(
+        HTTP1ClientFactory(),
+        tls_config=tls_config,
+    )
     async with await open_connection(("localhost", 5443), tls=True) as connection:
         data = await make_request(connection)
     print(data.decode())

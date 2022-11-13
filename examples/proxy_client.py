@@ -7,6 +7,7 @@ from hface.client import ProxyClient
 
 async def main():
     proxy_client = ProxyClient("https://localhost:6443")
+    proxy_client.tls_config.cafile = "certs/cacert.pem"
     async with proxy_client.session() as session:
         stream = await session.connect_tcp_tls(("localhost", 5443))
         await stream.send(

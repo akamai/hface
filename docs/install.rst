@@ -30,7 +30,7 @@ Python programs (including hface) do not trust to system certificates, but you c
 
     mkdir -p certs/
     mkcert -cert-file certs/cert.pem -key-file certs/key.pem localhost localhost 127.0.0.1 ::1
-    export SSL_CERT_FILE="$(mkcert -CAROOT)/rootCA.pem"
+    cp "$(mkcert -CAROOT)/rootCA.pem" certs/cacert.pem
 
 
 .. _Trio: https://github.com/python-trio/trio

@@ -56,15 +56,12 @@ A command-line HTTP client is included too:
 
 .. code-block:: shell
 
-    hface client https://localhost:5443
+    hface client --cacert certs/cacert.pem https://localhost:5443
+
 
 .. hint::
 
-    If you are using mkcert and the client fails with an SSL error,
-    make sure that you ``export SSL_CERT_FILE="$(mkcert -CAROOT)/rootCA.pem"``.
-
-    If you get SSL error when accessing public URL,
-    make sure that you did NOT export ``SSL_CERT_FILE``.
+    To test the client with a public server, do not set ``--cacert``.
 
 
 By default, the client opens a TPC connection and chooses between HTTP/1 or HTTP/2
@@ -92,7 +89,10 @@ The hface client has proxy support:
 
 .. code-block:: shell
 
-    hface client --proxy https://localhost:6443 https://localhost:5443
+    hface client \
+        --cacert certs/cacert.pem \
+        --proxy https://localhost:6443 \
+        https://localhost:5443
 
 The proxy can accept HTTP/1, HTTP/2, and HTTP/3 connections.
 In the tunneling mode, HTTP proxies can tunnel any TCP traffic.

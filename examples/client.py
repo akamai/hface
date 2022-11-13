@@ -5,6 +5,7 @@ from hface.client import Client, Request
 
 async def main():
     client = Client()
+    client.tls_config.cafile = "certs/cacert.pem"
     async with client.session() as session:
         request = Request("GET", "https://localhost:5443/")
         response = await session.dispatch(request)

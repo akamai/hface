@@ -27,7 +27,7 @@ from hface.events import (
     HeadersReceived,
     StreamResetSent,
 )
-from hface.protocols import HTTP2Protocol, protocol_registry
+from hface.protocols import HTTPOverTCPProtocol, protocol_registry
 
 CLIENT_MAGIC = b"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
 
@@ -100,29 +100,25 @@ def decode_headers(frame: bytes) -> HeadersType:
 
 
 @pytest.fixture(name="client", params=protocol_registry.http2_clients.keys())
-def _client(request: Any) -> HTTP2Protocol:
+def _client(request: Any) -> HTTPOverTCPProtocol:
     factory = protocol_registry.http2_clients[request.param]
-    protocol = factory(tls_version="TLS 1.2", alpn_protocol="h2")
-    assert isinstance(protocol, HTTP2Protocol)
-    return protocol
+    return factory(tls_version="TLS 1.2", alpn_protocol="h2")
 
 
 @pytest.fixture(name="server", params=protocol_registry.http2_servers.keys())
-def _server(request: Any) -> HTTP2Protocol:
+def _server(request: Any) -> HTTPOverTCPProtocol:
     factory = protocol_registry.http2_servers[request.param]
-    protocol = factory(tls_version="TLS 1.2", alpn_protocol="h2")
-    assert isinstance(protocol, HTTP2Protocol)
-    return protocol
+    return factory(tls_version="TLS 1.2", alpn_protocol="h2")
 
 
-def assert_connection_available(protocol: HTTP2Protocol) -> None:
+def assert_connection_available(protocol: HTTPOverTCPProtocol) -> None:
     assert protocol.next_event() is None
     assert protocol.bytes_to_send() == b""
     assert protocol.is_available()
     assert not protocol.has_expired()
 
 
-def assert_connection_expired(protocol: HTTP2Protocol) -> None:
+def assert_connection_expired(protocol: HTTPOverTCPProtocol) -> None:
     assert protocol.next_event() is None
     assert protocol.bytes_to_send() == b""
     assert not protocol.is_available()
@@ -130,7 +126,7 @@ def assert_connection_expired(protocol: HTTP2Protocol) -> None:
 
 
 class TestClient:
-    def test_init_connection(self, client: HTTP2Protocol) -> None:
+    def test_init_connection(self, client: HTTPOverTCPProtocol) -> None:
         """
         Test connection that connection preface is sent and received.
         """
@@ -143,12 +139,12 @@ class TestClient:
         assert get_frame_type(client.bytes_to_send()) == Frame.SETTINGS  # ACK settings
 
     @classmethod
-    def _init_connection(cls, client: HTTP2Protocol) -> None:
+    def _init_connection(cls, client: HTTPOverTCPProtocol) -> None:
         client.bytes_received(build_frame(Frame.SETTINGS))
         # Consume initial data, so that tests do not see them.
         client.bytes_to_send()
 
-    def test_connection_lost(self, client: HTTP2Protocol) -> None:
+    def test_connection_lost(self, client: HTTPOverTCPProtocol) -> None:
         """
         Test connection lost without EOF with no request inflight.
         """
@@ -157,7 +153,7 @@ class TestClient:
         assert client.next_event() == ConnectionTerminated()
         assert_connection_expired(client)
 
-    def test_eof_received(self, client: HTTP2Protocol) -> None:
+    def test_eof_received(self, client: HTTPOverTCPProtocol) -> None:
         """
         Test connection closed with EOF with no request inflight.
         """
@@ -168,7 +164,7 @@ class TestClient:
         client.connection_lost()
         assert_connection_expired(client)
 
-    def test_send_get(self, client: HTTP2Protocol) -> None:
+    def test_send_get(self, client: HTTPOverTCPProtocol) -> None:
         """
         Test a GET request.
         """
@@ -180,7 +176,7 @@ class TestClient:
         assert client.bytes_to_send() == build_headers_frame(headers, end_stream=True)
         assert_connection_available(client)
 
-    def test_send_post(self, client: HTTP2Protocol) -> None:
+    def test_send_post(self, client: HTTPOverTCPProtocol) -> None:
         """
         Test a POST request.
         """
@@ -194,7 +190,7 @@ class TestClient:
         assert client.bytes_to_send() == build_data_frame(b"Hello HTTP!")
         assert_connection_available(client)
 
-    def test_send_post_at_once(self, client: HTTP2Protocol) -> None:
+    def test_send_post_at_once(self, client: HTTPOverTCPProtocol) -> None:
         """
         Test a POST request when headers are sent with data.
         """
@@ -208,7 +204,7 @@ class TestClient:
         )
         assert_connection_available(client)
 
-    def test_send_post_in_parts(self, client: HTTP2Protocol) -> None:
+    def test_send_post_in_parts(self, client: HTTPOverTCPProtocol) -> None:
         """
         Test a POST request when data are not provided at once.
         """
@@ -226,7 +222,7 @@ class TestClient:
         )
         assert_connection_available(client)
 
-    def test_send_rst_stream(self, client: HTTP2Protocol) -> None:
+    def test_send_rst_stream(self, client: HTTPOverTCPProtocol) -> None:
         """
         Test that RST_STREAM frame can be sent.
         """
@@ -242,14 +238,14 @@ class TestClient:
         assert_connection_available(client)
 
     @classmethod
-    def _send_request(cls, client: HTTP2Protocol, method: bytes = b"GET") -> int:
+    def _send_request(cls, client: HTTPOverTCPProtocol, method: bytes = b"GET") -> int:
         headers = build_request_headers(method=method)
         stream_id = client.get_available_stream_id()
         client.submit_headers(stream_id, headers, end_stream=True)
         client.bytes_to_send()
         return stream_id
 
-    def test_connection_lost_during_request(self, client: HTTP2Protocol) -> None:
+    def test_connection_lost_during_request(self, client: HTTPOverTCPProtocol) -> None:
         """
         Test connection lost without EOF with a request inflight.
         """
@@ -259,7 +255,7 @@ class TestClient:
         assert client.next_event() == ConnectionTerminated()
         assert_connection_expired(client)
 
-    def test_eof_received_during_request(self, client: HTTP2Protocol) -> None:
+    def test_eof_received_during_request(self, client: HTTPOverTCPProtocol) -> None:
         """
         Test connection closed with EOF with a request inflight.
         """
@@ -289,7 +285,7 @@ class TestClient:
             # ),
         ],
     )
-    def test_recv_invalid(self, client: HTTP2Protocol, payload: bytes) -> None:
+    def test_recv_invalid(self, client: HTTPOverTCPProtocol, payload: bytes) -> None:
         """
         Test that invalid response causes an error and GOAWAY sent.
         """
@@ -301,7 +297,7 @@ class TestClient:
         assert get_frame_type(client.bytes_to_send()) == Frame.GOAWAY
         assert_connection_expired(client)
 
-    def test_recv(self, client: HTTP2Protocol) -> None:
+    def test_recv(self, client: HTTPOverTCPProtocol) -> None:
         """
         Test receive a response.
         """
@@ -316,7 +312,7 @@ class TestClient:
         )
         assert_connection_available(client)
 
-    def test_recv_fragmented(self, client: HTTP2Protocol) -> None:
+    def test_recv_fragmented(self, client: HTTPOverTCPProtocol) -> None:
         """
         Test receive a response in multiple fragments.
         """
@@ -336,7 +332,7 @@ class TestClient:
         )
         assert_connection_available(client)
 
-    def test_multiple_requests(self, client: HTTP2Protocol) -> None:
+    def test_multiple_requests(self, client: HTTPOverTCPProtocol) -> None:
         """
         Test multiple parallel requests.
         """
@@ -380,7 +376,7 @@ class TestClient:
         (b":authority", b"example.com:443"),
     ]
 
-    def test_http_connect(self, client: HTTP2Protocol) -> None:
+    def test_http_connect(self, client: HTTPOverTCPProtocol) -> None:
         """
         Test CONNECT request and response.
         """
@@ -392,7 +388,7 @@ class TestClient:
         assert client.next_event() == HeadersReceived(stream_id, [(b":status", b"200")])
         assert_connection_available(client)
 
-    def _http_connect(self, client: HTTP2Protocol) -> int:
+    def _http_connect(self, client: HTTPOverTCPProtocol) -> int:
         self._init_connection(client)
         stream_id = client.get_available_stream_id()
         client.submit_headers(stream_id, self._connect_request_headers)
@@ -401,7 +397,7 @@ class TestClient:
         assert isinstance(client.next_event(), HeadersReceived)
         return stream_id
 
-    def test_http_connect_data(self, client: HTTP2Protocol) -> None:
+    def test_http_connect_data(self, client: HTTPOverTCPProtocol) -> None:
         """
         Data can be exchanged after a CONNECT request.
         """
@@ -412,7 +408,7 @@ class TestClient:
         assert client.next_event() == DataReceived(stream_id, b"Pong")
         assert_connection_available(client)
 
-    def test_http_connect_client_end_stream(self, client: HTTP2Protocol) -> None:
+    def test_http_connect_client_end_stream(self, client: HTTPOverTCPProtocol) -> None:
         """
         Test stream closed by the client after a CONNECT request.
         """
@@ -420,7 +416,7 @@ class TestClient:
         client.submit_data(stream_id, b"Bye", end_stream=True)
         assert client.bytes_to_send() == build_data_frame(b"Bye", end_stream=True)
 
-    def test_http_connect_server_end_stream(self, client: HTTP2Protocol) -> None:
+    def test_http_connect_server_end_stream(self, client: HTTPOverTCPProtocol) -> None:
         """
         Test stream closed by the server after a CONNECT request.
         """
@@ -430,7 +426,7 @@ class TestClient:
 
 
 class TestServer:
-    def test_preface_invalid(self, server: HTTP2Protocol) -> None:
+    def test_preface_invalid(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test that invalid client preface causes an error.
         """
@@ -439,7 +435,7 @@ class TestServer:
         assert server.next_event() == ConnectionTerminated(0x01)
         assert_connection_expired(server)
 
-    def test_preface(self, server: HTTP2Protocol) -> None:
+    def test_preface(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test that connection preface is send and received.
         """
@@ -452,12 +448,12 @@ class TestServer:
         assert_connection_available(server)
 
     @classmethod
-    def _init_connection(cls, server: HTTP2Protocol) -> None:
+    def _init_connection(cls, server: HTTPOverTCPProtocol) -> None:
         server.bytes_received(CLIENT_MAGIC + build_frame(Frame.SETTINGS))
         # Consume initial data, so that tests do not see them.
         server.bytes_to_send()
 
-    def test_connection_lost(self, server: HTTP2Protocol) -> None:
+    def test_connection_lost(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test connection lost without EOF with no request inflight.
         """
@@ -466,7 +462,7 @@ class TestServer:
         assert server.next_event() == ConnectionTerminated()
         assert_connection_expired(server)
 
-    def test_eof_received(self, server: HTTP2Protocol) -> None:
+    def test_eof_received(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test connection closed with EOF with no request inflight.
         """
@@ -494,14 +490,14 @@ class TestServer:
             ),
         ],
     )
-    def test_recv_invalid(self, server: HTTP2Protocol, frame: bytes) -> None:
+    def test_recv_invalid(self, server: HTTPOverTCPProtocol, frame: bytes) -> None:
         self._init_connection(server)
         server.bytes_received(frame)
         assert server.next_event() == ConnectionTerminated(0x01)
         assert get_frame_type(server.bytes_to_send()) == Frame.GOAWAY
         assert_connection_expired(server)
 
-    def test_recv_headers_without_preface(self, server: HTTP2Protocol) -> None:
+    def test_recv_headers_without_preface(self, server: HTTPOverTCPProtocol) -> None:
         server.bytes_to_send()
         server.bytes_received(CLIENT_MAGIC)
         server.bytes_received(build_headers_frame(build_request_headers()))
@@ -514,7 +510,7 @@ class TestServer:
         assert get_frame_type(server.bytes_to_send()) == Frame.GOAWAY
         assert_connection_expired(server)
 
-    def test_recv_empty_headers(self, server: HTTP2Protocol) -> None:
+    def test_recv_empty_headers(self, server: HTTPOverTCPProtocol) -> None:
         self._init_connection(server)
         server.bytes_received(build_frame(Frame.HEADERS))
         event = server.next_event()
@@ -527,7 +523,7 @@ class TestServer:
         assert get_frame_type(server.bytes_to_send()) == Frame.GOAWAY
         assert_connection_expired(server)
 
-    def test_recv_get(self, server: HTTP2Protocol) -> None:
+    def test_recv_get(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test receive a GET request.
         """
@@ -537,7 +533,7 @@ class TestServer:
         assert server.next_event() == HeadersReceived(1, headers, end_stream=True)
         assert_connection_available(server)
 
-    def test_recv_get_fragmented(self, server: HTTP2Protocol) -> None:
+    def test_recv_get_fragmented(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test receive a GET request in multiple fragments.
         """
@@ -550,7 +546,7 @@ class TestServer:
         assert server.next_event() == HeadersReceived(1, headers, end_stream=True)
         assert_connection_available(server)
 
-    def test_recv_post(self, server: HTTP2Protocol) -> None:
+    def test_recv_post(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test receive a POST request.
         """
@@ -563,7 +559,7 @@ class TestServer:
         assert server.next_event() == DataReceived(1, b"Hello HTTP!", end_stream=True)
         assert_connection_available(server)
 
-    def test_recv_post_fragmented(self, server: HTTP2Protocol) -> None:
+    def test_recv_post_fragmented(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test receive a POST request in multiple fragments.
         """
@@ -582,7 +578,7 @@ class TestServer:
         assert server.next_event() == DataReceived(1, b"Hello HTTP!", end_stream=True)
         assert_connection_available(server)
 
-    def test_recv_post_with_empty_data(self, server: HTTP2Protocol) -> None:
+    def test_recv_post_with_empty_data(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test receive a POST request with empty data.
         """
@@ -593,7 +589,7 @@ class TestServer:
         assert server.next_event() == DataReceived(1, b"", end_stream=True)
         assert_connection_available(server)
 
-    def test_recv_post_with_no_data(self, server: HTTP2Protocol) -> None:
+    def test_recv_post_with_no_data(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test receive a POST request with empty data.
         """
@@ -603,7 +599,7 @@ class TestServer:
         assert server.next_event() == HeadersReceived(1, headers, end_stream=True)
         assert_connection_available(server)
 
-    def test_recv_post_with_multiple_data(self, server: HTTP2Protocol) -> None:
+    def test_recv_post_with_multiple_data(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test receive a POST request with empty data.
         """
@@ -620,14 +616,14 @@ class TestServer:
         assert_connection_available(server)
 
     @classmethod
-    def _recv_request(cls, server: HTTP2Protocol, *, stream_id: int = 1) -> int:
+    def _recv_request(cls, server: HTTPOverTCPProtocol, *, stream_id: int = 1) -> int:
         headers = build_request_headers()
         server.bytes_received(build_headers_frame(headers, stream_id=stream_id))
         event = server.next_event()
         assert isinstance(event, HeadersReceived)
         return stream_id
 
-    def test_connection_lost_during_request(self, server: HTTP2Protocol) -> None:
+    def test_connection_lost_during_request(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test connection lost without EOF with a request inflight.
         """
@@ -637,7 +633,7 @@ class TestServer:
         assert server.next_event() == ConnectionTerminated()
         assert_connection_expired(server)
 
-    def test_eof_received_during_request(self, server: HTTP2Protocol) -> None:
+    def test_eof_received_during_request(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test connection closed with EOF with a request inflight.
         """
@@ -649,7 +645,7 @@ class TestServer:
         server.connection_lost()
         assert_connection_expired(server)
 
-    def test_send_response(self, server: HTTP2Protocol) -> None:
+    def test_send_response(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test sending a response.
         """
@@ -662,7 +658,7 @@ class TestServer:
         assert server.bytes_to_send() == build_data_frame(b"Hello HTTP!")
         assert_connection_available(server)
 
-    def test_send_response_at_once(self, server: HTTP2Protocol) -> None:
+    def test_send_response_at_once(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test sending response headers with body at once.
         """
@@ -676,7 +672,7 @@ class TestServer:
         )
         assert_connection_available(server)
 
-    def test_response_data_in_parts(self, server: HTTP2Protocol) -> None:
+    def test_response_data_in_parts(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test response with multiple data frames.
         """
@@ -690,7 +686,7 @@ class TestServer:
         assert server.bytes_to_send() == build_data_frame(b"HTTP!")
         assert_connection_available(server)
 
-    def test_send_rst_stream(self, server: HTTP2Protocol) -> None:
+    def test_send_rst_stream(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test that RST_STREAM frame can be sent.
         """
@@ -701,7 +697,7 @@ class TestServer:
         assert server.next_event() == StreamResetSent(stream_id)
         assert_connection_available(server)
 
-    def test_multiple_requests(self, server: HTTP2Protocol) -> None:
+    def test_multiple_requests(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test multiple parallel requests.
         """
@@ -742,7 +738,7 @@ class TestServer:
     _connect_headers = [(b":method", b"CONNECT"), (b":authority", b"example.com:80")]
     _connect_headers_frame = build_headers_frame(_connect_headers)
 
-    def test_http_connect(self, server: HTTP2Protocol) -> None:
+    def test_http_connect(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test CONNECT request and response.
         """
@@ -753,7 +749,7 @@ class TestServer:
         assert decode_headers(server.bytes_to_send()) == [(b":status", b"200")]
         assert_connection_available(server)
 
-    def _http_connect(self, server: HTTP2Protocol) -> int:
+    def _http_connect(self, server: HTTPOverTCPProtocol) -> int:
         self._init_connection(server)
         server.bytes_received(self._connect_headers_frame)
         headers_event = server.next_event()
@@ -762,7 +758,7 @@ class TestServer:
         assert server.bytes_to_send()
         return headers_event.stream_id
 
-    def test_http_connect_data(self, server: HTTP2Protocol) -> None:
+    def test_http_connect_data(self, server: HTTPOverTCPProtocol) -> None:
         """
         Data can be exchanged after a CONNECT request.
         """
@@ -773,7 +769,7 @@ class TestServer:
         assert server.bytes_to_send() == build_data_frame(b"Pong", end_stream=False)
         assert_connection_available(server)
 
-    def test_http_connect_client_end_stream(self, server: HTTP2Protocol) -> None:
+    def test_http_connect_client_end_stream(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test stream closed by the client after a CONNECT request.
         """
@@ -781,7 +777,7 @@ class TestServer:
         server.bytes_received(build_data_frame(b"Bye", end_stream=True))
         assert server.next_event() == DataReceived(stream_id, b"Bye", end_stream=True)
 
-    def test_http_connect_server_end_stream(self, server: HTTP2Protocol) -> None:
+    def test_http_connect_server_end_stream(self, server: HTTPOverTCPProtocol) -> None:
         """
         Test stream closed by the server after a CONNECT request.
         """
